@@ -21,9 +21,14 @@ if [ "$1" = 'postgres' ]; then
 	    if [ "x$REPLICATE_FROM" == "x" ]; then
 		    gosu postgres initdb
         else
+            until ping -c 1 -W 1 ${REPLICATE_FROM}
+            do
+                echo "Waiting for master to ping..."
+                sleep 1s
+            done
             until gosu postgres pg_basebackup -h ${REPLICATE_FROM} -D ${PGDATA} -U ${PGUSER} -vP
             do
-                echo "Waiting for master to be available..."
+                echo "Waiting for master to connect..."
                 sleep 1s
             done
             chmod 700 ${PGDATA}
