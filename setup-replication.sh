@@ -6,7 +6,6 @@ cat >> ${PGDATA}/postgresql.conf <<EOF
 wal_level = hot_standby
 max_wal_senders = $PG_MAX_WAL_SENDERS
 wal_keep_segments = $PG_WAL_KEEP_SEGMENTS
-checkpoint_segments = $PG_CHECKPOINT_SEGMENTS
 hot_standby = on
 EOF
 

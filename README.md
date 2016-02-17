@@ -1,9 +1,9 @@
-# Postgres 9.4 Dockerized w/ Replication
+# Postgres 9.5 Dockerized w/ Replication
 
 Master/Slave Postgres Replication in 30 seconds.
 
   * Quickstart: `docker-compose up`
-  * For production, use docker-compose, Kubernetes, Tutum, other PaaS tooling, ... or roll your own.
+  * For production, use docker-compose, Kubernetes, Rancher, Tutum, other PaaS tooling, ... or roll your own.
   * To see container environment variable requirements, see `docker-compose.yml`.
   * To demonstrate multiple slaves:
     * `docker-compose up`
@@ -16,6 +16,4 @@ Master/Slave Postgres Replication in 30 seconds.
    * REPLICATE_FROM environment variable is only used during container initialization - if the master changes after the database has been initialized, you'll need to manually adjust the recovery.conf file in the slave containers' data volume.
    * Configuration:
      * PG_MAX_WAL_SENDERS 8 - Maximum number of slaves
-     * PG_WAL_KEEP_SEGMENTS 32 - See http://www.postgresql.org/docs/9.4/static/runtime-config-replication.html
-     * PG_CHECKPOINT_SEGMENTS 32 - See https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server
-       
+     * PG_WAL_KEEP_SEGMENTS 32 - See http://www.postgresql.org/docs/9.5/static/runtime-config-replication.html
