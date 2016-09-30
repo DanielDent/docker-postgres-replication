@@ -1,4 +1,4 @@
-# Postgres 9.5 Dockerized w/ Replication
+# Postgres 9.6 Dockerized w/ Replication
 
 Master/Slave Postgres Replication in 30 seconds.
 
@@ -16,4 +16,4 @@ Master/Slave Postgres Replication in 30 seconds.
    * REPLICATE_FROM environment variable is only used during container initialization - if the master changes after the database has been initialized, you'll need to manually adjust the recovery.conf file in the slave containers' data volume.
    * Configuration:
      * PG_MAX_WAL_SENDERS 8 - Maximum number of slaves
-     * PG_WAL_KEEP_SEGMENTS 32 - See http://www.postgresql.org/docs/9.5/static/runtime-config-replication.html
+     * PG_WAL_KEEP_SEGMENTS 32 - See http://www.postgresql.org/docs/9.6/static/runtime-config-replication.html
