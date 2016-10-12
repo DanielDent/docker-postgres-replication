@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ "x$REPLICATE_FROM" == "x" ]; then
 
