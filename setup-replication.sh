@@ -13,7 +13,7 @@ else
 
 cat > ${PGDATA}/recovery.conf <<EOF
 standby_mode = on
-primary_conninfo = 'host=${REPLICATE_FROM} port=5432 user=${PGUSER} password=${PGPASSWORD}'
+primary_conninfo = 'host=${REPLICATE_FROM} port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD}'
 trigger_file = '/tmp/touch_me_to_promote_to_me_master'
 EOF
 chown postgres ${PGDATA}/recovery.conf
