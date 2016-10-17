@@ -7,8 +7,8 @@ services:
     image: 'danieldent/postgres-replication'
     restart: 'always'
     environment:
-      PGUSER: 'postgres'
-      PGPASSWORD: 'postgres'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
       PGDATA: '/var/lib/postgresql/data/pgdata'
     volumes:
      - '/var/lib/postgresql/data'
@@ -20,8 +20,8 @@ services:
     image: 'danieldent/postgres-replication'
     restart: 'always'
     environment:
-      PGUSER: 'postgres'
-      PGPASSWORD: 'postgres'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
       PGDATA: '/var/lib/postgresql/data/pgdata'
       REPLICATE_FROM: 'pg-master'
     volumes:
