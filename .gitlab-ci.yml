@@ -1,0 +1,12 @@
+
+services:
+  - docker:dind
+
+build:
+  image: danieldent/docker-builder
+  script:
+    - docker version
+    - docker info
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker build ${DOCKER_BUILD_ARGS} --force-rm --no-cache --pull -t ci-${CI_BUILD_ID} .
+    - gitlab-ci-docker-retag.sh ci-${CI_BUILD_ID} $CI_REGISTRY_IMAGE 1 1 master
