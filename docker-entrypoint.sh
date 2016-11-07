@@ -22,6 +22,7 @@ if [ "$1" = 'postgres' ]; then
 	chmod 700 "$PGDATA"
 	chown -R postgres "$PGDATA"
 
+	mkdir -p /run/postgresql
 	chmod g+s /run/postgresql
 	chown -R postgres /run/postgresql
 
@@ -69,8 +70,8 @@ if [ "$1" = 'postgres' ]; then
 
 		if [ "x$REPLICATE_FROM" == "x" ]; then
 
-		{ echo; echo "host replication all 0.0.0.0/0 $authMethod"; } >> "$PGDATA/pg_hba.conf"
-		{ echo; echo "host all all 0.0.0.0/0 $authMethod"; } >> "$PGDATA/pg_hba.conf"
+		{ echo; echo "host replication all 0.0.0.0/0 $authMethod"; } | gosu postgres tee -a "$PGDATA/pg_hba.conf" > /dev/null
+		{ echo; echo "host all all 0.0.0.0/0 $authMethod"; } | gosu postgres tee -a "$PGDATA/pg_hba.conf" > /dev/null
 
 		# internal start of server in order to allow set-up using psql-client		
 		# does not listen on external TCP/IP and waits until start finishes
