@@ -6,7 +6,12 @@ if [ "x$PGUSER"     != "x" ]; then
 fi
 if [ "x$PGPASSWORD" != "x" ]; then
     POSTGRES_PASSWORD=$PGPASSWORD
-fi    
+fi
+
+# Forwards-compatibility for old variable names (pg_basebackup uses them)
+if [ "x$PGPASSWORD" = "x" ]; then
+    export PGPASSWORD=$POSTGRES_PASSWORD
+fi
 
 # Based on official postgres package's entrypoint script (https://hub.docker.com/_/postgres/)
 # Modified to be able to set up a slave. The docker-entrypoint-initdb.d hook provided is inadequate.
@@ -36,7 +41,7 @@ if [ "$1" = 'postgres' ]; then
                 	echo "Waiting for master to ping..."
                 	sleep 1s
             	done
-            	until gosu postgres pg_basebackup -h ${REPLICATE_FROM} -D ${PGDATA} -U ${POSTGRES_USER} -vP
+            	until gosu postgres pg_basebackup -h ${REPLICATE_FROM} -D ${PGDATA} -U ${POSTGRES_USER} -vP -w
             	do
                 	echo "Waiting for master to connect..."
                 	sleep 1s
@@ -45,7 +50,7 @@ if [ "$1" = 'postgres' ]; then
 
 		# check password first so we can output the warning before postgres
 		# messes it up
-		if [ "$POSTGRES_PASSWORD" ]; then
+		if [ ! -z "$POSTGRES_PASSWORD" ]; then
 			pass="PASSWORD '$POSTGRES_PASSWORD'"
 			authMethod=md5
 		else
