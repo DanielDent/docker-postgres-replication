@@ -50,7 +50,7 @@ if [ "$1" = 'postgres' ]; then
 
 		# check password first so we can output the warning before postgres
 		# messes it up
-		if [ ! -z "$POSTGRES_PASSWORD" ]; then
+		if [ "$POSTGRES_PASSWORD" ]; then
 			pass="PASSWORD '$POSTGRES_PASSWORD'"
 			authMethod=md5
 		else
