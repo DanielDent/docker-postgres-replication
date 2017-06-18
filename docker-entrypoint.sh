@@ -17,6 +17,28 @@ fi
 # Modified to be able to set up a slave. The docker-entrypoint-initdb.d hook provided is inadequate.
 
 set -e
+# usage: file_env VAR [DEFAULT]
+#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
+# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
+#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
+file_env() {
+	local var="$1"
+	local fileVar="${var}_FILE"
+	local def="${2:-}"
+	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
+		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
+		exit 1
+	fi
+	local val="$def"
+	if [ "${!var:-}" ]; then
+		val="${!var}"
+	elif [ "${!fileVar:-}" ]; then
+		val="$(< "${!fileVar}")"
+	fi
+	export "$var"="$val"
+	unset "$fileVar"
+}
+
 
 if [ "${1:0:1}" = '-' ]; then
 	set -- postgres "$@"
@@ -47,7 +69,7 @@ if [ "$1" = 'postgres' ]; then
                 	sleep 1s
             	done
 	    fi
-
+                file_env 'POSTGRES_PASSWORD'
 		# check password first so we can output the warning before postgres
 		# messes it up
 		if [ "$POSTGRES_PASSWORD" ]; then
@@ -83,11 +105,8 @@ if [ "$1" = 'postgres' ]; then
 		gosu postgres pg_ctl -D "$PGDATA" \
 			-o "-c listen_addresses='localhost'" \
 			-w start
-
-		: ${POSTGRES_USER:=postgres}
-		: ${POSTGRES_DB:=$POSTGRES_USER}
-		export POSTGRES_USER POSTGRES_DB
-
+                file_env 'POSTGRES_USER' 'postgres'
+                file_env 'POSTGRES_DB' "$POSTGRES_USER"
 		psql=( psql -v ON_ERROR_STOP=1 )
 
 		if [ "$POSTGRES_DB" != 'postgres' ]; then
