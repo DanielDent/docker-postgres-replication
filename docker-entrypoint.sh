@@ -39,6 +39,7 @@ file_env() {
 	unset "$fileVar"
 }
 
+file_env 'POSTGRES_PASSWORD'
 
 if [ "${1:0:1}" = '-' ]; then
 	set -- postgres "$@"
@@ -63,13 +64,13 @@ if [ "$1" = 'postgres' ]; then
                 	echo "Waiting for master to ping..."
                 	sleep 1s
             	done
+                PGPASSWORD=${POSTGRES_PASSWORD}
             	until gosu postgres pg_basebackup -h ${REPLICATE_FROM} -D ${PGDATA} -U ${POSTGRES_USER} -vP -w
             	do
                 	echo "Waiting for master to connect..."
                 	sleep 1s
             	done
 	    fi
-                file_env 'POSTGRES_PASSWORD'
 		# check password first so we can output the warning before postgres
 		# messes it up
 		if [ "$POSTGRES_PASSWORD" ]; then
