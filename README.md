@@ -2,7 +2,7 @@
 
 Master/Slave Postgres Replication in 30 seconds.
 
-  * Quickstart: `docker network create pg-replication`, `docker-compose up`
+  * Quickstart: `docker-compose up`
   * For production, use docker-compose, Kubernetes, Rancher, Tutum, other PaaS tooling, ... or roll your own.
   * To see container environment variable requirements, see `docker-compose.yml`.
   * To demonstrate multiple slaves:
