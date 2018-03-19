@@ -1,0 +1,82 @@
+--- docker-entrypoint.sh
++++ docker-entrypoint.sh
+@@ -1,6 +1,22 @@
+ #!/usr/bin/env bash
+ set -e
+ 
++# Backwards compatibility for old variable names (deprecated)
++if [ "x$PGUSER"     != "x" ]; then
++    POSTGRES_USER=$PGUSER
++fi
++if [ "x$PGPASSWORD" != "x" ]; then
++    POSTGRES_PASSWORD=$PGPASSWORD
++fi
++
++# Forwards-compatibility for old variable names (pg_basebackup uses them)
++if [ "x$PGPASSWORD" = "x" ]; then
++    export PGPASSWORD=$POSTGRES_PASSWORD
++fi
++
++# Based on official postgres package's entrypoint script (https://hub.docker.com/_/postgres/)
++# Modified to be able to set up a slave. The docker-entrypoint-initdb.d hook provided is inadequate.
++
+ # usage: file_env VAR [DEFAULT]
+ #    ie: file_env 'XYZ_DB_PASSWORD' 'example'
+ # (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
+@@ -58,7 +74,21 @@ if [ "$1" = 'postgres' ]; then
+ 		if [ "$POSTGRES_INITDB_WALDIR" ]; then
+ 			export POSTGRES_INITDB_ARGS="$POSTGRES_INITDB_ARGS --waldir $POSTGRES_INITDB_WALDIR"
+ 		fi
++      file_env 'REPLICATE_FROM'
++      if [ "x$REPLICATE_FROM" == "x" ]; then
+ 		eval "initdb --username=postgres $POSTGRES_INITDB_ARGS"
++	  else
++        until ping -c 1 -W 1 ${REPLICATE_FROM}
++        do
++            echo "Waiting for master to ping..."
++            sleep 1s
++        done
++        until gosu postgres pg_basebackup -h ${REPLICATE_FROM} -D ${PGDATA} -U ${POSTGRES_USER} -vP -w
++        do
++            echo "Waiting for master to connect..."
++            sleep 1s
++        done
++      fi
+ 
+ 		# check password first so we can output the warning before postgres
+ 		# messes it up
+@@ -86,7 +116,11 @@ if [ "$1" = 'postgres' ]; then
+ 			authMethod=trust
+ 		fi
+ 
++		if [ "x$REPLICATE_FROM" == "x" ]; then
++
+ 		{
++			echo
++			echo "host replication all all $authMethod"
+ 			echo
+ 			echo "host all all all $authMethod"
+ 		} >> "$PGDATA/pg_hba.conf"
+@@ -120,6 +154,8 @@ if [ "$1" = 'postgres' ]; then
+ 		EOSQL
+ 		echo
+ 
++        fi
++
+ 		psql+=( --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" )
+ 
+ 		echo
+@@ -133,8 +169,10 @@ if [ "$1" = 'postgres' ]; then
+ 			echo
+ 		done
+ 
++	  if [ "x$REPLICATE_FROM" == "x" ]; then
+ 		PGUSER="${PGUSER:-postgres}" \
+ 		pg_ctl -D "$PGDATA" -m fast -w stop
++	  fi
+ 
+ 		echo
+ 		echo 'PostgreSQL init process complete; ready for start up.'
+-- 
+2.14.1
+
