@@ -17,3 +17,8 @@ Master/Slave Postgres Replication in 30 seconds.
    * Configuration:
      * PG_MAX_WAL_SENDERS 8 - Maximum number of slaves
      * PG_WAL_KEEP_SEGMENTS 32 - See http://www.postgresql.org/docs/9.6/static/runtime-config-replication.html
+
+## License
+
+Copyright 2015-2018 [Daniel Dent](https://www.danieldent.com/). Licensed under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0).
+
