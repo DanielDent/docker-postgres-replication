@@ -4,7 +4,7 @@ version: '2'
 services:
   pg-master:
     build: '.'
-    image: 'danieldent/postgres-replication'
+    image: 'donlinglok/postgres-replication'
     restart: 'always'
     environment:
       POSTGRES_USER: 'postgres'
@@ -17,7 +17,7 @@ services:
 
   pg-slave:
     build: '.'
-    image: 'danieldent/postgres-replication'
+    image: 'donlinglok/postgres-replication'
     restart: 'always'
     environment:
       POSTGRES_USER: 'postgres'

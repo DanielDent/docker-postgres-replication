@@ -34,18 +34,18 @@ if [ "$1" = 'postgres' ]; then
 	# look specifically for PG_VERSION, as it is expected in the DB dir
 	if [ ! -s "$PGDATA/PG_VERSION" ]; then
 	    if [ "x$REPLICATE_FROM" == "x" ]; then
-		eval "gosu postgres initdb $POSTGRES_INITDB_ARGS"
+			eval "gosu postgres initdb $POSTGRES_INITDB_ARGS"
 	    else
-            	until ping -c 1 -W 1 ${REPLICATE_FROM}
-            	do
-                	echo "Waiting for master to ping..."
-                	sleep 1s
-            	done
-            	until gosu postgres pg_basebackup -h ${REPLICATE_FROM} -D ${PGDATA} -U ${POSTGRES_USER} -vP -w
-            	do
-                	echo "Waiting for master to connect..."
-                	sleep 1s
-            	done
+			until ping -c 1 -W 1 ${REPLICATE_FROM}
+			do
+				echo "Waiting for master to ping..."
+				sleep 1s
+			done
+			until gosu postgres pg_basebackup -h ${REPLICATE_FROM} -D ${PGDATA} -U ${POSTGRES_USER} -vP -w
+			do
+				echo "Waiting for master to connect..."
+				sleep 1s
+			done
 	    fi
 
 		# check password first so we can output the warning before postgres
@@ -73,39 +73,39 @@ if [ "$1" = 'postgres' ]; then
 			authMethod=trust
 		fi
 
-		if [ "x$REPLICATE_FROM" == "x" ]; then
-
 		{ echo; echo "host replication all 0.0.0.0/0 $authMethod"; } | gosu postgres tee -a "$PGDATA/pg_hba.conf" > /dev/null
 		{ echo; echo "host all all 0.0.0.0/0 $authMethod"; } | gosu postgres tee -a "$PGDATA/pg_hba.conf" > /dev/null
 
-		# internal start of server in order to allow set-up using psql-client		
-		# does not listen on external TCP/IP and waits until start finishes
-		gosu postgres pg_ctl -D "$PGDATA" \
-			-o "-c listen_addresses='localhost'" \
-			-w start
+		if [ "x$REPLICATE_FROM" == "x" ]; then
 
-		: ${POSTGRES_USER:=postgres}
-		: ${POSTGRES_DB:=$POSTGRES_USER}
-		export POSTGRES_USER POSTGRES_DB
+			# internal start of server in order to allow set-up using psql-client		
+			# does not listen on external TCP/IP and waits until start finishes
+			gosu postgres pg_ctl -D "$PGDATA" \
+				-o "-c listen_addresses='localhost'" \
+				-w start
 
-		psql=( psql -v ON_ERROR_STOP=1 )
+			: ${POSTGRES_USER:=postgres}
+			: ${POSTGRES_DB:=$POSTGRES_USER}
+			export POSTGRES_USER POSTGRES_DB
 
-		if [ "$POSTGRES_DB" != 'postgres' ]; then
+			psql=( psql -v ON_ERROR_STOP=1 )
+
+			if [ "$POSTGRES_DB" != 'postgres' ]; then
+				"${psql[@]}" --username postgres <<-EOSQL
+					CREATE DATABASE "$POSTGRES_DB" ;
+				EOSQL
+				echo
+			fi
+
+			if [ "$POSTGRES_USER" = 'postgres' ]; then
+				op='ALTER'
+			else
+				op='CREATE'
+			fi
 			"${psql[@]}" --username postgres <<-EOSQL
-				CREATE DATABASE "$POSTGRES_DB" ;
+				$op USER "$POSTGRES_USER" WITH SUPERUSER $pass ;
 			EOSQL
 			echo
-		fi
-
-		if [ "$POSTGRES_USER" = 'postgres' ]; then
-			op='ALTER'
-		else
-			op='CREATE'
-		fi
-		"${psql[@]}" --username postgres <<-EOSQL
-			$op USER "$POSTGRES_USER" WITH SUPERUSER $pass ;
-		EOSQL
-		echo
 		
 		fi
 
@@ -122,9 +122,9 @@ if [ "$1" = 'postgres' ]; then
 			echo
 		done
 
-	if [ "x$REPLICATE_FROM" == "x" ]; then
-		gosu postgres pg_ctl -D "$PGDATA" -m fast -w stop
-	fi
+		if [ "x$REPLICATE_FROM" == "x" ]; then
+			gosu postgres pg_ctl -D "$PGDATA" -m fast -w stop
+		fi
 
 		echo
 		echo 'PostgreSQL init process complete; ready for start up.'
