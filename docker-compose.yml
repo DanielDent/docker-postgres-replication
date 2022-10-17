@@ -4,8 +4,6 @@ services:
   pg-master:
     build: .
     restart: always
-    # the image name
-    image: 'donlinglok/postgres-replication'
     ports:
       - "5432:5432"
     environment:
