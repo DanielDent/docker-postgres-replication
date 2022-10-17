@@ -1,4 +1,4 @@
-FROM postgres:13.7
+FROM postgres:15.0
 
 RUN apt-get update -y
 RUN apt-get install -y iputils-ping
@@ -11,3 +11,6 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY standby.signal /tmp/standby.signal
 
 RUN chmod +x /docker-entrypoint-initdb.d/setup-replication.sh /usr/local/bin/docker-entrypoint.sh
+
+## debug
+# ENTRYPOINT ["tail", "-f", "/dev/null"]

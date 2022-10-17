@@ -1,32 +1,34 @@
-
-version: '2'
+version: "3.8"
 
 services:
   pg-master:
-    build: '.'
-    image: 'donlinglok/postgres-replication'
-    restart: 'always'
+    build: .
+    restart: always
+    # image: 'donlinglok/postgres-replication'
+    ports:
+      - "5432:5432"
     environment:
-      POSTGRES_USER: 'postgres'
-      POSTGRES_PASSWORD: 'postgres'
-      PGDATA: '/var/lib/postgresql/data/pgdata'
+      - POSTGRES_DB=test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      #- REPLICATE_FROM=pg-slave #only after pg-slave get promoted
     volumes:
-     - '/var/lib/postgresql/data'
-    expose:
-     - '5432'
+      - /var/lib/postgresql/data
 
+  # #Promote to master `select pg_promote(true,60);`
   pg-slave:
-    build: '.'
-    image: 'donlinglok/postgres-replication'
-    restart: 'always'
+    build: .
+    restart: always
+    ports:
+      - "2432:5432"
     environment:
-      POSTGRES_USER: 'postgres'
-      POSTGRES_PASSWORD: 'postgres'
-      PGDATA: '/var/lib/postgresql/data/pgdata'
-      REPLICATE_FROM: 'pg-master'
+      - POSTGRES_DB=test
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - REPLICATE_FROM=pg-master
+    depends_on:
+      - "pg-master"
     volumes:
-     - '/var/lib/postgresql/data'
-    expose:
-     - '5432'
-    links:
-     - 'pg-master'
+      - /var/lib/postgresql/data
